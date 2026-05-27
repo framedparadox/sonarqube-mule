@@ -1,0 +1,12 @@
+<h2>Autodiscovery API ID must use property placeholder</h2>
+<p>The 'apiId' attribute in <api-gateway:autodiscovery> must reference a property placeholder (e.g., ${api.id}) instead of a hardcoded value. This enables different API instances across environments to be managed independently in API Manager.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"&gt;
+  &lt;api-gateway:autodiscovery apiId="12345" apiName="My API" version="1.0"/&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"&gt;
+  &lt;api-gateway:autodiscovery apiId="${api.id}" apiName="My API" version="1.0"/&gt;
+&lt;/mule&gt;</pre>

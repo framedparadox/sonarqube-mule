@@ -1,0 +1,16 @@
+<h2>Application must include MUnit test configuration</h2>
+<p>Application must contain at least one <munit:config> element indicating the presence of MUnit tests. Unit tests are essential for code quality, regression prevention, and continuous integration. Every Mule application should have corresponding test coverage.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;flow name="business-logic"&gt;
+    &lt;logger message="Processing..."/&gt;
+  &lt;/flow&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:munit="http://www.mulesoft.org/schema/mule/munit"&gt;
+  &lt;munit:config name="munit-config"/&gt;
+  &lt;flow name="business-logic"&gt;
+    &lt;logger message="Processing..."/&gt;
+  &lt;/flow&gt;
+&lt;/mule&gt;</pre>

@@ -1,0 +1,6 @@
+<h2>Logger messages should include correlation ID for request tracing</h2>
+<p>Logger message attributes in flows should reference the correlation ID (e.g., <code>#[correlationId]</code>) to enable end-to-end request tracing across services.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;logger level="INFO" message="Processing order"/&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;logger level="INFO" message="Processing order | correlationId: #[correlationId]"/&gt;</pre>

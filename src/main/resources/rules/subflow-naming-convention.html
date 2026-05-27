@@ -1,0 +1,12 @@
+<h2>Subflow names must follow kebab-case naming convention</h2>
+<p>Subflow names must use lowercase kebab-case format (e.g., 'validate-input', 'transform-response'). This pattern matches lowercase letters, colons, curly braces, and hyphens. Consistent naming conventions ensure code consistency across the project.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;sub-flow name="validateInput"&gt;&lt;logger/&gt;&lt;/sub-flow&gt;
+  &lt;sub-flow name="TransformResponse"&gt;&lt;logger/&gt;&lt;/sub-flow&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;sub-flow name="validate-input"&gt;&lt;logger/&gt;&lt;/sub-flow&gt;
+  &lt;sub-flow name="transform-response"&gt;&lt;logger/&gt;&lt;/sub-flow&gt;
+&lt;/mule&gt;</pre>

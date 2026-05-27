@@ -1,0 +1,20 @@
+<h2>HTTP Listener must configure TLS context for secure connections</h2>
+<p>HTTP Listener configuration must include a 'tlsContext' attribute in <listener-connection> to specify SSL/TLS settings. TLS context defines the keystore, truststore, supported protocols, and cipher suites required for HTTPS endpoints. Missing TLS context prevents secure HTTPS communication.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:listener-config name="HTTP_config"&gt;
+    &lt;http:listener-connection host="0.0.0.0" port="8443" protocol="HTTPS"/&gt;
+  &lt;/http:listener-config&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:tls="http://www.mulesoft.org/schema/mule/tls"&gt;
+  &lt;tls:context name="TLS_Context"&gt;
+    &lt;tls:key-store path="keystore.jks" password="${tls.password}"/&gt;
+  &lt;/tls:context&gt;
+  &lt;http:listener-config name="HTTP_config"&gt;
+    &lt;http:listener-connection host="0.0.0.0" port="8443" protocol="HTTPS" tlsContext="TLS_Context"/&gt;
+  &lt;/http:listener-config&gt;
+&lt;/mule&gt;</pre>

@@ -1,0 +1,14 @@
+<h2>API autodiscovery configuration must be present</h2>
+<p>Application must include exactly one <api-gateway:autodiscovery> element to register the API with Anypoint API Manager. Autodiscovery enables API analytics, policy enforcement, and centralized API governance.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:listener-config name="HTTP_config" host="0.0.0.0" port="8081"/&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"&gt;
+  &lt;api-gateway:autodiscovery apiId="${api.id}" apiName="My API" version="1.0"/&gt;
+  &lt;http:listener-config name="HTTP_config" host="0.0.0.0" port="8081"/&gt;
+&lt;/mule&gt;</pre>

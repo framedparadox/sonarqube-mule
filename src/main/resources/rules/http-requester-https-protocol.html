@@ -1,0 +1,16 @@
+<h2>HTTP Request must use HTTPS protocol for secure communication</h2>
+<p>HTTP Request configuration must specify protocol='HTTPS' in <request-connection>. Using HTTP for outbound requests exposes data in transit to interception. HTTPS encrypts all communication with external services.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:request-config name="HTTP_Request_config"&gt;
+    &lt;http:request-connection host="api.example.com" port="80" protocol="HTTP"/&gt;
+  &lt;/http:request-config&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:request-config name="HTTP_Request_config"&gt;
+    &lt;http:request-connection host="api.example.com" port="443" protocol="HTTPS"/&gt;
+  &lt;/http:request-config&gt;
+&lt;/mule&gt;</pre>

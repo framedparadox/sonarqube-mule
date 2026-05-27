@@ -1,0 +1,24 @@
+<h2>HTTP Request Basic Authentication credentials must use property placeholders</h2>
+<p>When Basic Authentication is used, the 'username' and 'password' attributes in <http:basic-authentication> must reference property placeholders (e.g., ${api.username}, ${api.password}) instead of hardcoded values. Hardcoded credentials are a critical security vulnerability.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:request-config name="HTTP_Request_config"&gt;
+    &lt;http:request-connection host="api.example.com"&gt;
+      &lt;http:authentication&gt;
+        &lt;http:basic-authentication username="admin" password="secret123"/&gt;
+      &lt;/http:authentication&gt;
+    &lt;/http:request-connection&gt;
+  &lt;/http:request-config&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:request-config name="HTTP_Request_config"&gt;
+    &lt;http:request-connection host="api.example.com"&gt;
+      &lt;http:authentication&gt;
+        &lt;http:basic-authentication username="${api.username}" password="${api.password}"/&gt;
+      &lt;/http:authentication&gt;
+    &lt;/http:request-connection&gt;
+  &lt;/http:request-config&gt;
+&lt;/mule&gt;</pre>

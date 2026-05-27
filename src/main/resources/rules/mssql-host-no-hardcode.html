@@ -1,0 +1,16 @@
+<h2>MSSQL database host must use property placeholder</h2>
+<p>The 'host' attribute in <db:mssql-connection> must reference a property placeholder (e.g., ${db.host}) instead of a hardcoded hostname or IP address. Hardcoded database hosts prevent environment portability and expose infrastructure details in code.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:db="http://www.mulesoft.org/schema/mule/db"&gt;
+  &lt;db:config name="DB_Config"&gt;
+    &lt;db:mssql-connection host="192.168.1.100" port="1433"/&gt;
+  &lt;/db:config&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:db="http://www.mulesoft.org/schema/mule/db"&gt;
+  &lt;db:config name="DB_Config"&gt;
+    &lt;db:mssql-connection host="${db.host}" port="1433"/&gt;
+  &lt;/db:config&gt;
+&lt;/mule&gt;</pre>

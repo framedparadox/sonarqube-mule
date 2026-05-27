@@ -1,0 +1,6 @@
+<h2>Logger must not log authorization headers</h2>
+<p>Logger message attributes must not reference Authorization headers. Logging these values exposes bearer tokens and API keys in log files.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;logger message="Headers: #[attributes.headers.Authorization]"/&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;logger message="Request received for: #[attributes.requestPath]"/&gt;</pre>

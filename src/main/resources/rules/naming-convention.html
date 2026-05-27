@@ -1,0 +1,12 @@
+<h2>Flow names must follow kebab-case naming convention</h2>
+<p>Flow names must use lowercase kebab-case format (e.g., 'get-customer-details', 'process-order'). This pattern matches lowercase letters, colons, curly braces, and hyphens. Consistent naming improves code readability and maintainability.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;flow name="getCustomerDetails"&gt;&lt;logger/&gt;&lt;/flow&gt;
+  &lt;flow name="ProcessOrder"&gt;&lt;logger/&gt;&lt;/flow&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;flow name="get-customer-details"&gt;&lt;logger/&gt;&lt;/flow&gt;
+  &lt;flow name="process-order"&gt;&lt;logger/&gt;&lt;/flow&gt;
+&lt;/mule&gt;</pre>

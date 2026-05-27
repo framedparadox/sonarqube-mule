@@ -1,0 +1,6 @@
+<h2>Logger must specify a category for structured logging</h2>
+<p>All <code>&lt;logger&gt;</code> components must include a non-empty <code>category</code> attribute. Categories enable log routing and filtering in monitoring platforms like Splunk or ELK.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;logger level="INFO" message="Request received"/&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;logger level="INFO" category="com.example.api.orders" message="Request received"/&gt;</pre>

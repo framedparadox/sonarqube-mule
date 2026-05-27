@@ -1,0 +1,24 @@
+<h2>DataWeave payload transformations must use external .dwl files</h2>
+<p>Transform Message components using <set-payload> should reference external .dwl files via the 'resource' attribute instead of inline scripts. External DataWeave files improve code organization, reusability, testing, and IDE support.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"&gt;
+  &lt;flow name="transform-flow"&gt;
+    &lt;ee:transform&gt;
+      &lt;ee:message&gt;
+        &lt;ee:set-payload&gt;{"result": payload.value}&lt;/ee:set-payload&gt;
+      &lt;/ee:message&gt;
+    &lt;/ee:transform&gt;
+  &lt;/flow&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"&gt;
+  &lt;flow name="transform-flow"&gt;
+    &lt;ee:transform&gt;
+      &lt;ee:message&gt;
+        &lt;ee:set-payload resource="transform.dwl"/&gt;
+      &lt;/ee:message&gt;
+    &lt;/ee:transform&gt;
+  &lt;/flow&gt;
+&lt;/mule&gt;</pre>
