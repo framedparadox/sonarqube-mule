@@ -1,0 +1,522 @@
+type: mulesoft-sonar-rules
+version: 1.0
+rulesets:
+  - category: application
+    rules:
+      - id: 1
+        ruleKey: apikit-config-required
+        name: APIKit configuration is required for API implementation
+        description: Application must include an APIKit configuration (<apikit:config>) to auto-generate the REST API implementation interface from the RAML/OAS specification. This ensures consistent API contract implementation and reduces manual coding errors.
+        severity: MAJOR
+        applies: application
+        type: code_smell
+        tags: [mule4, application, apikit, configuration]
+        remediationEffort: 60
+        locationHint: //apikit:config
+        xpath: count(//mule:mule/apikit:config)>0
+
+      - id: 2
+        ruleKey: apikit-exception-strategy
+        name: APIKit global exception handling strategy must be configured
+        description: Application must define a global error handler with APIKit exception types (<mule:on-error-propagate type='APIKIT:*'>). This ensures standardized error responses and proper HTTP status code mapping for API errors.
+        severity: MAJOR
+        applies: application
+        type: code_smell
+        tags: [mule4, application, apikit, error-handling]
+        remediationEffort: 60
+        locationHint: //mule:on-error-propagate[starts-with(@type,'APIKIT')]
+        xpath: starts-with(//mule:on-error-propagate/@type,'APIKIT')
+
+  - category: flows
+    rules:
+      - id: 1
+        ruleKey: count-limit
+        name: Configuration file exceeds maximum flow count limit
+        description: Configuration files should contain fewer than 10 flows to maintain readability and modularity. Consider splitting large configuration files into multiple smaller files organized by domain or functionality.
+        severity: MAJOR
+        type: code_smell
+        tags: [mule4, flows, organization, complexity]
+        remediationEffort: 60
+        xpath: not(count(//mule:mule/mule:flow)>=10)
+
+      - id: 2
+        ruleKey: subflow-count-limit
+        name: Configuration file exceeds maximum subflow count limit
+        description: Configuration files should contain fewer than 5 subflows to maintain code organization and readability. Excessive subflows in a single file indicate the need to refactor into separate configuration files.
+        severity: MAJOR
+        type: code_smell
+        tags: [mule4, flows, subflows, organization, complexity]
+        remediationEffort: 60
+        xpath: not(count(//mule:mule/mule:sub-flow)>=5)
+
+      - id: 3
+        ruleKey: naming-convention
+        name: Flow names must follow kebab-case naming convention
+        description: Flow names must use lowercase kebab-case format (e.g., 'get-customer-details', 'process-order'). This pattern matches lowercase letters, colons, curly braces, and hyphens. Consistent naming improves code readability and maintainability.
+        severity: MINOR
+        type: code_smell
+        tags: [mule4, flows, naming, conventions]
+        remediationEffort: 15
+        locationHint: //mule:flow[not(matches(@name, '^[a-z:\\{}]+(-[a-z]+)*$'))]
+        xpath: |
+          count(//mule:mule/mule:flow)=0 or
+          matches(//mule:mule/mule:flow/@name, '^[a-z:\\{}]+(-[a-z]+)*$')
+
+      - id: 4
+        ruleKey: subflow-naming-convention
+        name: Subflow names must follow kebab-case naming convention
+        description: Subflow names must use lowercase kebab-case format (e.g., 'validate-input', 'transform-response'). This pattern matches lowercase letters, colons, curly braces, and hyphens. Consistent naming conventions ensure code consistency across the project.
+        severity: MINOR
+        type: code_smell
+        tags: [mule4, subflows, naming, conventions]
+        remediationEffort: 15
+        locationHint: //mule:sub-flow[not(matches(@name, '^[a-z:\\{}]+(-[a-z]+)*$'))]
+        xpath: |
+          count(//mule:mule/mule:sub-flow)=0 or
+          matches(//mule:mule/mule:sub-flow/@name, '^[a-z:\\{}]+(-[a-z]+)*$')
+
+      - id: 6
+        ruleKey: encryption-key-logging-forbidden
+        name: Encryption key must not be exposed in log messages
+        description: Logger components must not contain ${mule.key} in their message attribute. Logging encryption keys creates a critical security vulnerability by exposing sensitive credentials in log files. Remove any references to mule.key from logger messages.
+        severity: MAJOR
+        type: vulnerability
+        tags: [mule4, security, logging, credentials]
+        remediationEffort: 60
+        locationHint: //mule:logger[contains(@message,'${mule.key}')]
+        xpath: |
+          count(//mule:mule/mule:flow/mule:logger[contains(@message,'${mule.key}')])=0
+          and
+          count(//mule:mule/mule:sub-flow/mule:logger[contains(@message,'${mule.key}')])=0
+
+      - id: 7
+        ruleKey: set-variable-doc-name
+        name: Set Variable doc:name must match the variable name
+        description: The doc:name attribute of <set-variable> components should match the variableName attribute for consistency and clarity. This makes flow diagrams and debugging more intuitive by showing the actual variable name being set.
+        severity: MINOR
+        type: code_smell
+        tags: [mule4, flows, documentation, naming]
+        remediationEffort: 15
+        locationHint: //mule:set-variable[@doc:name != @variableName]
+        xpath: |
+          count(//mule:mule/mule:flow/mule:set-variable)=0
+          or
+          //mule:mule/mule:flow/mule:set-variable/@doc:name = //mule:mule/mule:flow/mule:set-variable/@variableName
+
+      - id: 8
+        ruleKey: healthcheck-flow-required
+        name: Application must include a health check flow
+        description: Application must contain at least one flow with 'healthcheck' in its name. Health check endpoints are essential for monitoring, load balancers, and orchestration platforms to verify application availability and readiness.
+        severity: MINOR
+        type: code_smell
+        tags: [mule4, flows, monitoring, healthcheck]
+        remediationEffort: 15
+        locationHint: //mule:flow[contains(@name,'healthcheck')]
+        xpath: |
+          count(//mule:mule/mule:flow)=0
+          or
+          //mule:mule/mule:flow[contains(@name,'healthcheck')]
+
+  - category: configuration
+    rules:
+      - id: 1
+        ruleKey: config-properties-required
+        name: Application must use configuration properties for external resources
+        description: Application must include either <secure-properties:config> or <configuration-properties> to externalize configuration. This ensures credentials, URLs, and environment-specific settings are managed outside the code and can be changed without redeployment.
+        severity: MAJOR
+        applies: application
+        type: bug
+        tags: [mule4, configuration, properties, externalization]
+        remediationEffort: 60
+        locationHint: //secure-properties:config | //mule:configuration-properties
+        xpath: |
+          count(//mule:mule/secure-properties:config)>=1 or
+          count(//mule:mule/mule:configuration-properties)>=1
+
+      - id: 2
+        ruleKey: credentials-vault-no-hardcoded-key
+        name: Secure properties encryption key must use property placeholder
+        description: The 'key' attribute in <secure-properties:config> must reference a property placeholder (e.g., ${encryption.key}) instead of a hardcoded value. Hardcoded encryption keys compromise security by exposing them in source code and version control.
+        severity: MAJOR
+        type: bug
+        tags: [mule4, security, credentials, configuration]
+        remediationEffort: 60
+        locationHint: //secure-properties:config[not(matches(@key, '^\$\{.*\}$'))]
+        xpath: |
+          count(//mule:mule/secure-properties:config)=0
+          or
+          matches(//mule:mule/secure-properties:config/@key, '^\$\{.*\}$')
+
+      - id: 3
+        ruleKey: autodiscovery-required
+        name: API autodiscovery configuration must be present
+        description: Application must include exactly one <api-gateway:autodiscovery> element to register the API with Anypoint API Manager. Autodiscovery enables API analytics, policy enforcement, and centralized API governance.
+        severity: MAJOR
+        applies: application
+        type: vulnerability
+        tags: [mule4, api-management, configuration, governance]
+        remediationEffort: 60
+        locationHint: //api-gateway:autodiscovery
+        xpath: count(//mule:mule/api-gateway:autodiscovery)=1
+
+      - id: 4
+        ruleKey: apikit-http-status-codes
+        name: APIKit error handlers must define standard HTTP error responses
+        description: Global error handler must include on-error-propagate elements for APIKIT:BAD_REQUEST (400), APIKIT:METHOD_NOT_ALLOWED (405), and APIKIT:NOT_FOUND (404). These error handlers ensure proper HTTP status codes are returned for common API validation errors.
+        severity: MAJOR
+        applies: application
+        type: bug
+        tags: [mule4, apikit, error-handling, http]
+        remediationEffort: 60
+        locationHint: //mule:on-error-propagate[@type='APIKIT:BAD_REQUEST' or @type='APIKIT:METHOD_NOT_ALLOWED' or @type='APIKIT:NOT_FOUND']
+        xpath: |
+          count(//mule:on-error-propagate[@type='APIKIT:BAD_REQUEST'])>0
+          and
+          count(//mule:on-error-propagate[@type='APIKIT:METHOD_NOT_ALLOWED'])>0
+          and
+          count(//mule:on-error-propagate[@type='APIKIT:NOT_FOUND'])>0
+
+      - id: 5
+        ruleKey: dwl-external-payload
+        name: DataWeave payload transformations must use external .dwl files
+        description: Transform Message components using <set-payload> should reference external .dwl files via the 'resource' attribute instead of inline scripts. External DataWeave files improve code organization, reusability, testing, and IDE support.
+        severity: MINOR
+        type: code_smell
+        tags: [mule4, dataweave, transformation, organization]
+        remediationEffort: 15
+        locationHint: //ee:set-payload[not(matches(@resource,'^.*dwl$'))]
+        xpath: |
+          count(//mule:mule/mule:flow/ee:transform/ee:message/ee:set-payload)=0
+          or
+          matches(//mule:mule/mule:flow/ee:transform/ee:message/ee:set-payload/@resource,'^.*dwl$')
+
+      - id: 6
+        ruleKey: dwl-external-variable
+        name: DataWeave variable transformations must use external .dwl files
+        description: Transform Message components using <set-variable> should reference external .dwl files via the 'resource' attribute instead of inline scripts. External DataWeave files improve code organization, reusability, testing, and IDE support.
+        severity: MINOR
+        type: code_smell
+        tags: [mule4, dataweave, transformation, organization]
+        remediationEffort: 15
+        locationHint: //ee:set-variable[not(matches(@resource,'^.*dwl$'))]
+        xpath: |
+          count(//mule:mule/mule:flow/ee:transform/ee:message/ee:set-variable)=0
+          or
+          matches(//mule:mule/mule:flow/ee:transform/ee:message/ee:set-variable/@resource,'^.*dwl$')
+
+      - id: 7
+        ruleKey: http-listener-https-protocol
+        name: HTTP Listener must use HTTPS protocol for secure communication
+        description: HTTP Listener configuration must specify protocol='HTTPS' in <listener-connection>. Using HTTP exposes data in transit to interception and tampering. HTTPS encrypts all communication between clients and the API.
+        severity: MAJOR
+        type: vulnerability
+        tags: [mule4, http, security, protocol]
+        remediationEffort: 60
+        locationHint: //http:listener-config/http:listener-connection[@protocol!='HTTPS']
+        xpath: |
+          count(//mule:mule/http:listener-config)=0
+          or
+          //mule:mule/http:listener-config/http:listener-connection/@protocol='HTTPS'
+
+      - id: 8
+        ruleKey: http-listener-port-property
+        name: HTTP Listener port must use property placeholder
+        description: HTTP Listener configuration must use ${https.port} or ${https.private.port} for the port attribute instead of hardcoded values. This allows port configuration to vary across environments (dev, test, prod) without code changes.
+        severity: MAJOR
+        type: code_smell
+        tags: [mule4, http, configuration, externalization]
+        remediationEffort: 60
+        locationHint: //http:listener-config/http:listener-connection[@port!='${https.port}' and @port!='${https.private.port}']
+        xpath: |
+          count(//mule:mule/http:listener-config)=0
+          or
+          //mule:mule/http:listener-config/http:listener-connection/@port='${https.port}'
+          or
+          //mule:mule/http:listener-config/http:listener-connection/@port='${https.private.port}'
+
+      - id: 9
+        ruleKey: autodiscovery-api-id-no-hardcode
+        name: Autodiscovery API ID must use property placeholder
+        description: The 'apiId' attribute in <api-gateway:autodiscovery> must reference a property placeholder (e.g., ${api.id}) instead of a hardcoded value. This enables different API instances across environments to be managed independently in API Manager.
+        severity: MAJOR
+        type: code_smell
+        tags: [mule4, api-management, configuration, externalization]
+        remediationEffort: 60
+        locationHint: //api-gateway:autodiscovery[not(matches(@apiId, '^\$\{.*\}$'))]
+        xpath: |
+          count(//mule:mule/api-gateway:autodiscovery)=0
+          or
+          matches(//mule:mule/api-gateway:autodiscovery/@apiId, '^\$\{.*\}$')
+
+      - id: 10
+        ruleKey: mssql-host-no-hardcode
+        name: MSSQL database host must use property placeholder
+        description: The 'host' attribute in <db:mssql-connection> must reference a property placeholder (e.g., ${db.host}) instead of a hardcoded hostname or IP address. Hardcoded database hosts prevent environment portability and expose infrastructure details in code.
+        severity: MAJOR
+        type: code_smell
+        tags: [mule4, database, configuration, externalization]
+        remediationEffort: 60
+        locationHint: //db:mssql-connection[not(matches(@host,'^\$\{.*\}$'))]
+        xpath: |
+          count(//mule:mule/db:config/db:mssql-connection)=0
+          or
+          matches(//mule:mule/db:config/db:mssql-connection/@host,
+          '^\$\{.*\}$')
+
+      - id: 11
+        ruleKey: db-generic-url-no-hardcode
+        name: Database connection URL must use property placeholder
+        description: The 'url' attribute in <db:generic-connection> must reference a property placeholder (e.g., ${db.url}) instead of a hardcoded connection string. Hardcoded URLs prevent environment portability and may expose database credentials in code.
+        severity: MAJOR
+        type: code_smell
+        tags: [mule4, database, configuration, externalization]
+        remediationEffort: 60
+        locationHint: //db:generic-connection[not(matches(@url,'^\$\{.*\}$'))]
+        xpath: |
+          count(//mule:mule/db:config/db:generic-connection)=0
+          or
+          matches(//mule:mule/db:config/db:generic-connection/@url,
+          '^\$\{.*\}$')
+
+      - id: 12
+        ruleKey: jms-credentials-no-hardcode
+        name: JMS credentials must use property placeholders
+        description: The 'username' and 'password' attributes in <jms:active-mq-connection> must reference property placeholders (e.g., ${jms.username}, ${jms.password}) instead of hardcoded values. Hardcoded credentials are a critical security vulnerability.
+        severity: MAJOR
+        type: code_smell
+        tags: [mule4, jms, security, credentials, externalization]
+        remediationEffort: 60
+        locationHint: //jms:active-mq-connection[not(matches(@username,'^\$\{.*\}$')) or not(matches(@password,'^\$\{.*\}$'))]
+        xpath: |
+          count(//mule:mule/jms:config/jms:active-mq-connection)=0
+          or
+          matches(//mule:mule/jms:config/jms:active-mq-connection/@username,
+          '^\$\{.*\}$')
+          or
+          matches(//mule:mule/jms:config/jms:active-mq-connection/@password,
+          '^\$\{.*\}$')
+
+      - id: 13
+        ruleKey: email-smtp-no-hardcode
+        name: SMTP configuration must use property placeholders
+        description: The 'host', 'port', 'user', and 'password' attributes in <email:smtp-connection> must reference property placeholders (e.g., ${smtp.host}) instead of hardcoded values. This ensures email configuration can be changed per environment and credentials remain secure.
+        severity: MAJOR
+        type: code_smell
+        tags: [mule4, email, security, credentials, externalization]
+        remediationEffort: 60
+        locationHint: //email:smtp-connection[not(matches(@host,'^\$\{.*\}$')) or not(matches(@port,'^\$\{.*\}$'))]
+        xpath: |
+          count(//mule:mule/email:smtp-config/email:smtp-connection)=0
+          or
+          matches(//mule:mule/email:smtp-config/email:smtp-connection/@host,
+          '^\$\{.*\}$')
+          or
+          matches(//mule:mule/email:smtp-config/email:smtp-connection/@port,
+          '^\$\{.*\}$')
+          or
+          matches(//mule:mule/email:smtp-config/email:smtp-connection/@user,
+          '^\$\{.*\}$')
+          or
+          matches(//mule:mule/email:smtp-config/email:smtp-connection/@password,
+          '^\$\{.*\}$')
+
+      - id: 14
+        ruleKey: http-requester-https-protocol
+        name: HTTP Request must use HTTPS protocol for secure communication
+        description: HTTP Request configuration must specify protocol='HTTPS' in <request-connection>. Using HTTP for outbound requests exposes data in transit to interception. HTTPS encrypts all communication with external services.
+        severity: MAJOR
+        type: vulnerability
+        tags: [mule4, http, security, protocol]
+        remediationEffort: 60
+        locationHint: //http:request-config/http:request-connection[@protocol!='HTTPS']
+        xpath: |
+          count(//mule:mule/http:request-config)=0
+          or
+          //mule:mule/http:request-config/http:request-connection/@protocol='HTTPS'
+
+      - id: 15
+        ruleKey: http-requester-port-property
+        name: HTTP Request port must use property placeholder
+        description: HTTP Request configuration must use ${https.port} or ${https.private.port} for the port attribute instead of hardcoded values. This allows external service port configuration to vary across environments without code changes.
+        severity: MAJOR
+        type: code_smell
+        tags: [mule4, http, configuration, externalization]
+        remediationEffort: 60
+        locationHint: //http:request-config/http:request-connection[@port!='${https.port}' and @port!='${https.private.port}']
+        xpath: |
+          count(//mule:mule/http:request-config)=0
+          or
+          //mule:mule/http:request-config/http:request-connection/@port='${https.port}'
+          or
+          //mule:mule/http:request-config/http:request-connection/@port='${https.private.port}'
+
+      - id: 16
+        ruleKey: http-requester-basic-auth
+        name: HTTP Request must not configure Basic Authentication
+        description: HTTP Request configuration should not include <http:basic-authentication> elements. This rule flags the presence of basic authentication configuration, which may indicate credentials are being managed in the configuration. Use more secure authentication methods or ensure credentials are properly externalized.
+        severity: MAJOR
+        type: vulnerability
+        tags: [mule4, http, security, authentication]
+        remediationEffort: 60
+        locationHint: //http:basic-authentication
+        xpath: |
+          count(//mule:mule/http:request-config)=0
+          or
+          count(//mule:mule/http:request-config/http:request-connection/http:authentication/http:basic-authentication)=0
+
+      - id: 17
+        ruleKey: http-requester-basic-auth-no-hardcode
+        name: HTTP Request Basic Authentication credentials must use property placeholders
+        description: When Basic Authentication is used, the 'username' and 'password' attributes in <http:basic-authentication> must reference property placeholders (e.g., ${api.username}, ${api.password}) instead of hardcoded values. Hardcoded credentials are a critical security vulnerability.
+        severity: MAJOR
+        type: vulnerability
+        tags: [mule4, http, security, credentials, authentication]
+        remediationEffort: 60
+        locationHint: //http:basic-authentication[not(matches(@username,'^\$\{.*\}$')) or not(matches(@password,'^\$\{.*\}$'))]
+        xpath: |
+          count(//mule:mule/http:request-config)=0
+          or
+          (count(//mule:mule/http:request-config/http:request-connection/http:authentication/http:basic-authentication)>0
+          and
+          matches(//mule:mule/http:request-config/http:request-connection/http:authentication/http:basic-authentication/@username,'^\$\{.*\}$')
+          or
+          matches(//mule:mule/http:request-config/http:request-connection/http:authentication/http:basic-authentication/@password,'^\$\{.*\}$')
+          )
+
+      - id: 18
+        ruleKey: http-requester-tls-context
+        name: HTTP Request must configure TLS context for secure connections
+        description: HTTP Request configuration must include a 'tlsContext' attribute in <request-connection> to specify SSL/TLS settings. TLS context configuration controls certificate validation, supported protocols, and cipher suites for secure HTTPS communication.
+        severity: MAJOR
+        type: vulnerability
+        tags: [mule4, http, security, tls]
+        remediationEffort: 60
+        locationHint: //http:request-config/http:request-connection[not(@tlsContext)]
+        xpath: |
+          count(//mule:mule/http:request-config)=0
+          or
+          count(//mule:mule/http:request-config/http:request-connection/@tlsContext)>0
+
+      - id: 19
+        ruleKey: http-listener-tls-context
+        name: HTTP Listener must configure TLS context for secure connections
+        description: HTTP Listener configuration must include a 'tlsContext' attribute in <listener-connection> to specify SSL/TLS settings. TLS context defines the keystore, truststore, supported protocols, and cipher suites required for HTTPS endpoints. Missing TLS context prevents secure HTTPS communication.
+        severity: CRITICAL
+        type: vulnerability
+        tags: [mule4, http, security, tls]
+        remediationEffort: 90
+        locationHint: //http:listener-config/http:listener-connection[not(@tlsContext)]
+        xpath: |
+          count(//mule:mule/http:listener-config)=0
+          or
+          count(//mule:mule/http:listener-config/http:listener-connection/@tlsContext)>0
+
+      - id: 20
+        ruleKey: munit-test-required
+        name: Application must include MUnit test configuration
+        description: Application must contain at least one <munit:config> element indicating the presence of MUnit tests. Unit tests are essential for code quality, regression prevention, and continuous integration. Every Mule application should have corresponding test coverage.
+        severity: MAJOR
+        type: vulnerability
+        tags: [mule4, testing, munit, quality]
+        remediationEffort: 60
+        locationHint: //munit:config
+        xpath: count(//mule:mule/munit:config)>0
+
+
+  - category: security
+    rules:
+      - id: 1
+        ruleKey: set-payload-no-inline-secret
+        name: Set Payload must not contain inline secrets
+        description: set-payload value must not contain the words 'password', 'secret', or 'key'. Inline secrets in configuration files are exposed in source control and logs.
+        severity: CRITICAL
+        type: vulnerability
+        tags: [mule4, security, credentials]
+        remediationEffort: 30
+        locationHint: //mule:set-payload[contains(@value,'password') or contains(@value,'secret') or contains(@value,'key')]
+        xpath: count(//mule:mule//mule:set-payload[contains(@value,'password') or contains(@value,'secret') or contains(@value,'key')])=0
+
+      - id: 2
+        ruleKey: logger-no-payload-at-info-level
+        name: INFO logger must not log full payload
+        description: Logger components at INFO level must not reference #[payload] in their message. Logging full payloads at INFO level can expose sensitive data and cause excessive log volume.
+        severity: MAJOR
+        type: vulnerability
+        tags: [mule4, security, logging, observability]
+        remediationEffort: 15
+        locationHint: //mule:logger[@level='INFO' and contains(@message,'#[payload')]
+        xpath: count(//mule:mule//mule:logger[@level='INFO' and contains(@message,'#[payload')])=0
+
+      - id: 3
+        ruleKey: logger-no-authorization-header
+        name: Logger must not log authorization headers
+        description: Logger components must not reference Authorization headers in their message. Logging authorization headers exposes bearer tokens and credentials in log files.
+        severity: CRITICAL
+        type: vulnerability
+        tags: [mule4, security, logging, credentials]
+        remediationEffort: 30
+        locationHint: //mule:logger[contains(@message,'Authorization') or contains(@message,'authorization')]
+        xpath: count(//mule:mule//mule:logger[contains(@message,'Authorization') or contains(@message,'authorization')])=0
+
+      - id: 4
+        ruleKey: tls-context-revocation-check
+        name: TLS context should configure certificate revocation check
+        description: TLS context configurations should include a revocation-check element to validate certificate revocation status, protecting against compromised certificates.
+        severity: MAJOR
+        type: vulnerability
+        tags: [mule4, security, tls, certificates]
+        remediationEffort: 60
+        locationHint: //tls:context[not(tls:revocation-check)]
+        xpath: |
+          count(//mule:mule/tls:context)=0
+          or
+          count(//mule:mule/tls:context[not(tls:revocation-check)])=0
+
+      - id: 5
+        ruleKey: http-listener-no-wildcard-path
+        name: HTTP Listener path must not be a wildcard
+        description: HTTP Listener path attribute must not be '/*' or '*'. Wildcard paths can inadvertently expose unintended endpoints and bypass route-level security controls.
+        severity: MAJOR
+        type: vulnerability
+        tags: [mule4, http, security, routing]
+        remediationEffort: 30
+        locationHint: //http:listener[@path='/*' or @path='*']
+        xpath: count(//mule:mule//http:listener[@path='/*' or @path='*'])=0
+
+  - category: observability
+    rules:
+      - id: 1
+        ruleKey: logger-category-required
+        name: Logger must specify a category for structured logging
+        description: All logger components must include a non-empty 'category' attribute. Categories enable log filtering, routing, and structured aggregation in monitoring platforms.
+        severity: MINOR
+        type: code_smell
+        tags: [mule4, observability, logging, monitoring]
+        remediationEffort: 5
+        locationHint: //mule:logger[not(@category) or @category='']
+        xpath: count(//mule:mule//mule:logger[not(@category) or @category=''])=0
+
+      - id: 2
+        ruleKey: correlation-id-in-logger
+        name: Logger messages should include correlation ID for request tracing
+        description: Logger message attributes in flows should reference the correlation ID to enable end-to-end request tracing across services.
+        severity: MINOR
+        type: code_smell
+        tags: [mule4, observability, logging, tracing]
+        remediationEffort: 10
+        locationHint: //mule:flow//mule:logger[not(contains(@message,'correlationId') or contains(@message,'correlation-id'))]
+        xpath: |
+          count(//mule:mule/mule:flow//mule:logger)=0
+          or
+          count(//mule:mule/mule:flow//mule:logger[not(contains(@message,'correlationId') or contains(@message,'correlation-id') or contains(@message,'#[correlationId'))])=0
+
+      - id: 3
+        ruleKey: doc-name-non-empty
+        name: Component doc:name must not be empty
+        description: All components with a doc:name attribute must provide a non-empty value. Empty doc:name attributes make flow diagrams unintelligible.
+        severity: MINOR
+        type: code_smell
+        tags: [mule4, documentation, naming]
+        remediationEffort: 5
+        locationHint: //*[@doc:name='']
+        xpath: count(//mule:mule//*[@doc:name=''])=0
