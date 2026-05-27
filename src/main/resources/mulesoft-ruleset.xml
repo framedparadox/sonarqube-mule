@@ -1,0 +1,261 @@
+<rulestore type="mulesoft-ruleset">
+	<ruleset category="application">
+		<rule id="1" ruleKey="apikit-config-required"
+		  name="APIKit configuration is required for API implementation"
+		  description="Application must include an APIKit configuration (&lt;apikit:config&gt;) to auto-generate the REST API implementation interface from the RAML/OAS specification. This ensures consistent API contract implementation and reduces manual coding errors."
+			  severity="MAJOR" applies="application" type="code_smell">
+			count(//mule:mule/apikit:config)>0
+		</rule>
+		<rule id="2" ruleKey="apikit-exception-strategy"
+		  name="APIKit global exception handling strategy must be configured"
+		  description="Application must define a global error handler with APIKit exception types (&lt;mule:on-error-propagate type='APIKIT:*'&gt;). This ensures standardized error responses and proper HTTP status code mapping for API errors."
+			  severity="MAJOR" applies="application" type="code_smell">
+			starts-with(//mule:on-error-propagate/@type,'APIKIT')
+		</rule>
+	</ruleset>
+	<ruleset category="flows">
+			<rule id="1" ruleKey="count-limit"
+			name="Configuration file exceeds maximum flow count limit"
+		  description="Configuration files should contain fewer than 10 flows to maintain readability and modularity. Consider splitting large configuration files into multiple smaller files organized by domain or functionality."
+			  severity="MAJOR" type="code_smell">
+			not(count(//mule:mule/mule:flow)>=10)
+		</rule>
+		<rule id="2" ruleKey="subflow-count-limit"
+		  name="Configuration file exceeds maximum subflow count limit"
+		  description="Configuration files should contain fewer than 5 subflows to maintain code organization and readability. Excessive subflows in a single file indicate the need to refactor into separate configuration files."
+			  severity="MAJOR" type="code_smell">
+			not(count(//mule:mule/mule:sub-flow)>=5)
+		</rule>
+		<rule id="3" ruleKey="naming-convention"
+		  name="Flow names must follow kebab-case naming convention"
+		  description="Flow names must use lowercase kebab-case format (e.g., 'get-customer-details', 'process-order'). This pattern matches: lowercase letters, colons, curly braces, and hyphens. Consistent naming improves code readability and maintainability."
+			  severity="MINOR" type="code_smell">
+			count(//mule:mule/mule:flow)=0 or
+			matches(//mule:mule/mule:flow/@name, '^[a-z:\\{}]+(-[a-z]+)*$')
+		</rule>
+		<rule id="4" ruleKey="subflow-naming-convention"
+		  name="Subflow names must follow kebab-case naming convention"
+		  description="Subflow names must use lowercase kebab-case format (e.g., 'validate-input', 'transform-response'). This pattern matches: lowercase letters, colons, curly braces, and hyphens. Consistent naming conventions ensure code consistency across the project."
+			  severity="MINOR" type="code_smell">
+			count(//mule:mule/mule:sub-flow)=0 or
+			matches(//mule:mule/mule:sub-flow/@name, '^[a-z:\\{}]+(-[a-z]+)*$')
+		</rule>
+		<rule id="6" ruleKey="encryption-key-logging-forbidden"
+		  name="Encryption key must not be exposed in log messages"
+		  description="Logger components must not contain ${mule.key} in their message attribute. Logging encryption keys creates a critical security vulnerability by exposing sensitive credentials in log files. Remove any references to mule.key from logger messages." severity="MAJOR"
+			  type="vulnerability">
+			count(//mule:mule/mule:flow/mule:logger[contains(@message,'${mule.key}')])=0
+			and
+			count(//mule:mule/mule:sub-flow/mule:logger[contains(@message,'${mule.key}')])=0
+		</rule>
+		<rule id="7" ruleKey="set-variable-doc-name"
+		  name="Set Variable doc:name must match the variable name"
+		  description="The doc:name attribute of &lt;set-variable&gt; components should match the variableName attribute for consistency and clarity. This makes flow diagrams and debugging more intuitive by showing the actual variable name being set."
+			  severity="MINOR" type="code_smell">
+			count(//mule:mule/mule:flow/mule:set-variable)=0
+			or
+			//mule:mule/mule:flow/mule:set-variable/@doc:name = //mule:mule/mule:flow/mule:set-variable/@variableName
+		</rule>
+		<rule id="8" ruleKey="healthcheck-flow-required"
+		  name="Application must include a health check flow"
+		  description="Application must contain at least one flow with 'healthcheck' in its name. Health check endpoints are essential for monitoring, load balancers, and orchestration platforms to verify application availability and readiness."
+			  severity="MINOR" type="code_smell">
+			count(//mule:mule/mule:flow)=0
+			or
+			//mule:mule/mule:flow[contains(@name,'healthcheck')]
+		</rule>
+	</ruleset>
+	<ruleset category="configuration">
+		<rule id="1" ruleKey="config-properties-required"
+		  name="Application must use configuration properties for external resources"
+		  description="Application must include either &lt;secure-properties:config&gt; or &lt;configuration-properties&gt; to externalize configuration. This ensures credentials, URLs, and environment-specific settings are managed outside the code and can be changed without redeployment."
+			  severity="MAJOR" applies="application" type="bug">
+			count(//mule:mule/secure-properties:config)>=1 or
+			count(//mule:mule/mule:configuration-properties)>=1
+		</rule>
+		<rule id="2" ruleKey="credentials-vault-no-hardcoded-key"
+		  name="Secure properties encryption key must use property placeholder"
+		  description="The 'key' attribute in &lt;secure-properties:config&gt; must reference a property placeholder (e.g., ${encryption.key}) instead of a hardcoded value. Hardcoded encryption keys compromise security by exposing them in source code and version control."
+			  severity="MAJOR" type="bug">
+			count(//mule:mule/secure-properties:config)=0
+			or
+			matches(//mule:mule/secure-properties:config/@key, '^\$\{.*\}$')
+		</rule>
+		<rule id="3" ruleKey="autodiscovery-required"
+		  name="API autodiscovery configuration must be present"
+		  description="Application must include exactly one &lt;api-gateway:autodiscovery&gt; element to register the API with Anypoint API Manager. Autodiscovery enables API analytics, policy enforcement, and centralized API governance."
+			  severity="MAJOR" applies="application" type="vulnerability">
+			count(//mule:mule/api-gateway:autodiscovery)=1
+		</rule>
+		<rule id="4" ruleKey="apikit-http-status-codes"
+		  name="APIKit error handlers must define standard HTTP error responses"
+		  description="Global error handler must include on-error-propagate elements for APIKIT:BAD_REQUEST (400), APIKIT:METHOD_NOT_ALLOWED (405), and APIKIT:NOT_FOUND (404). These error handlers ensure proper HTTP status codes are returned for common API validation errors."
+			  severity="MAJOR" applies="application" type="bug">
+			count(//mule:on-error-propagate[@type='APIKIT:BAD_REQUEST'])>0
+			and
+			count(//mule:on-error-propagate[@type='APIKIT:METHOD_NOT_ALLOWED'])>0
+			and
+			count(//mule:on-error-propagate[@type='APIKIT:NOT_FOUND'])>0
+		</rule>
+		<rule id="5" ruleKey="dwl-external-payload"
+		  name="DataWeave payload transformations must use external .dwl files"
+		  description="Transform Message components using &lt;set-payload&gt; should reference external .dwl files via the 'resource' attribute instead of inline scripts. External DataWeave files improve code organization, reusability, testing, and IDE support."
+			  severity="MINOR" type="code_smell">
+			count(//mule:mule/mule:flow/ee:transform/ee:message/ee:set-payload)=0
+			or
+			matches(//mule:mule/mule:flow/ee:transform/ee:message/ee:set-payload/@resource,'^.*dwl$')
+		</rule>
+		<rule id="6" ruleKey="dwl-external-variable"
+		  name="DataWeave variable transformations must use external .dwl files"
+		  description="Transform Message components using &lt;set-variable&gt; should reference external .dwl files via the 'resource' attribute instead of inline scripts. External DataWeave files improve code organization, reusability, testing, and IDE support."
+			  severity="MINOR" type="code_smell">
+			count(//mule:mule/mule:flow/ee:transform/ee:message/ee:set-variable)=0
+			or
+			matches(//mule:mule/mule:flow/ee:transform/ee:message/ee:set-variable/@resource,'^.*dwl$')
+		</rule>
+		<rule id="7" ruleKey="http-listener-https-protocol"
+		  name="HTTP Listener must use HTTPS protocol for secure communication"
+		  description="HTTP Listener configuration must specify protocol='HTTPS' in &lt;listener-connection&gt;. Using HTTP exposes data in transit to interception and tampering. HTTPS encrypts all communication between clients and the API."
+			  severity="MAJOR" type="vulnerability"
+			  locationHint="//*//global.xml//*[local-name()='listener-config']">
+			count(//mule:mule/http:listener-config)=0
+			or
+			//mule:mule/http:listener-config/http:listener-connection/@protocol='HTTPS'
+		</rule>
+		<rule id="8" ruleKey="http-listener-port-property"
+		  name="HTTP Listener port must use property placeholder"
+		  description="HTTP Listener configuration must use ${https.port} or ${https.private.port} for the port attribute instead of hardcoded values. This allows port configuration to vary across environments (dev, test, prod) without code changes."
+			  severity="MAJOR" type="code_smell"
+			  locationHint="//*//global.xml//*[local-name()='listener-config']">
+			count(//mule:mule/http:listener-config)=0
+			or
+			//mule:mule/http:listener-config/http:listener-connection/@port='${https.port}'
+			or
+			//mule:mule/http:listener-config/http:listener-connection/@port='${https.private.port}'
+		</rule>
+		<rule id="9" ruleKey="autodiscovery-api-id-no-hardcode"
+		  name="Autodiscovery API ID must use property placeholder"
+		  description="The 'apiId' attribute in &lt;api-gateway:autodiscovery&gt; must reference a property placeholder (e.g., ${api.id}) instead of a hardcoded value. This enables different API instances across environments to be managed independently in API Manager."
+			  severity="MAJOR" type="code_smell">
+			count(//mule:mule/api-gateway:autodiscovery)=0
+			or
+			matches(//mule:mule/api-gateway:autodiscovery/@apiId, '^\$\{.*\}$')
+		</rule>
+		<rule id="10" ruleKey="mssql-host-no-hardcode"
+		  name="MSSQL database host must use property placeholder"
+		  description="The 'host' attribute in &lt;db:mssql-connection&gt; must reference a property placeholder (e.g., ${db.host}) instead of a hardcoded hostname or IP address. Hardcoded database hosts prevent environment portability and expose infrastructure details in code."
+			  severity="MAJOR" type="code_smell">
+			count(//mule:mule/db:config/db:mssql-connection)=0
+			or
+			matches(//mule:mule/db:config/db:mssql-connection/@host,
+			'^\$\{.*\}$')
+		</rule>
+		<rule id="11" ruleKey="db-generic-url-no-hardcode"
+		  name="Database connection URL must use property placeholder"
+		  description="The 'url' attribute in &lt;db:generic-connection&gt; must reference a property placeholder (e.g., ${db.url}) instead of a hardcoded connection string. Hardcoded URLs prevent environment portability and may expose database credentials in code."
+			  severity="MAJOR" type="code_smell">
+			count(//mule:mule/db:config/db:generic-connection)=0
+			or
+			matches(//mule:mule/db:config/db:generic-connection/@url,
+			'^\$\{.*\}$')
+		</rule>
+		<rule id="12" ruleKey="jms-credentials-no-hardcode"
+		  name="JMS credentials must use property placeholders"
+		  description="The 'username' and 'password' attributes in &lt;jms:active-mq-connection&gt; must reference property placeholders (e.g., ${jms.username}, ${jms.password}) instead of hardcoded values. Hardcoded credentials are a critical security vulnerability."
+			  severity="MAJOR" type="code_smell">
+			count(//mule:mule/jms:config/jms:active-mq-connection)=0
+			or
+			matches(//mule:mule/jms:config/jms:active-mq-connection/@username,
+			'^\$\{.*\}$')
+			or
+			matches(//mule:mule/jms:config/jms:active-mq-connection/@password,
+			'^\$\{.*\}$')
+		</rule>
+		<rule id="13" ruleKey="email-smtp-no-hardcode"
+		  name="SMTP configuration must use property placeholders"
+		  description="The 'host', 'port', 'user', and 'password' attributes in &lt;email:smtp-connection&gt; must reference property placeholders (e.g., ${smtp.host}) instead of hardcoded values. This ensures email configuration can be changed per environment and credentials remain secure."
+			  severity="MAJOR" type="code_smell">
+			count(//mule:mule/email:smtp-config/email:smtp-connection)=0
+			or
+			matches(//mule:mule/email:smtp-config/email:smtp-connection/@host,
+			'^\$\{.*\}$')
+			or
+			matches(//mule:mule/email:smtp-config/email:smtp-connection/@port,
+			'^\$\{.*\}$')
+			or
+			matches(//mule:mule/email:smtp-config/email:smtp-connection/@user,
+			'^\$\{.*\}$')
+			or
+			matches(//mule:mule/email:smtp-config/email:smtp-connection/@password,
+			'^\$\{.*\}$')
+		</rule>
+		<rule id="14" ruleKey="http-requester-https-protocol"
+		  name="HTTP Request must use HTTPS protocol for secure communication"
+		  description="HTTP Request configuration must specify protocol='HTTPS' in &lt;request-connection&gt;. Using HTTP for outbound requests exposes data in transit to interception. HTTPS encrypts all communication with external services."
+			  severity="MAJOR" type="vulnerability"
+			  locationHint="//*//global.xml//*[local-name()='request-config']">
+			count(//mule:mule/http:request-config)=0
+			or
+			//mule:mule/http:request-config/http:request-connection/@protocol='HTTPS'
+		</rule>
+		<rule id="15" ruleKey="http-requester-port-property"
+		  name="HTTP Request port must use property placeholder"
+		  description="HTTP Request configuration must use ${https.port} or ${https.private.port} for the port attribute instead of hardcoded values. This allows external service port configuration to vary across environments without code changes."
+			  severity="MAJOR" type="code_smell"
+			  locationHint="//*//global.xml//*[local-name()='request-config']">
+			count(//mule:mule/http:request-config)=0
+			or
+			//mule:mule/http:request-config/http:request-connection/@port='${https.port}'
+			or
+			//mule:mule/http:request-config/http:request-connection/@port='${https.private.port}'
+		</rule>
+		<rule id="16" ruleKey="http-requester-basic-auth"
+		  name="HTTP Request must not configure Basic Authentication"
+		  description="HTTP Request configuration should not include &lt;http:basic-authentication&gt; elements. This rule flags the presence of basic authentication configuration, which may indicate credentials are being managed in the configuration. Use more secure authentication methods or ensure credentials are properly externalized."
+			  severity="MAJOR" type="vulnerability"
+			  locationHint="//*//global.xml//*[local-name()='request-config']">
+			count(//mule:mule/http:request-config)=0
+			or
+			count(//mule:mule/http:request-config/http:request-connection/http:authentication/http:basic-authentication)=0
+		</rule>
+		<rule id="17" ruleKey="http-requester-basic-auth-no-hardcode"
+		  name="HTTP Request Basic Authentication credentials must use property placeholders"
+		  description="When Basic Authentication is used, the 'username' and 'password' attributes in &lt;http:basic-authentication&gt; must reference property placeholders (e.g., ${api.username}, ${api.password}) instead of hardcoded values. Hardcoded credentials are a critical security vulnerability."
+			  severity="MAJOR" type="vulnerability"
+			  locationHint="//*//global.xml//*[local-name()='request-config']">
+			count(//mule:mule/http:request-config)=0
+			or
+			(count(//mule:mule/http:request-config/http:request-connection/http:authentication/http:basic-authentication)>0
+			and
+			matches(//mule:mule/http:request-config/http:request-connection/http:authentication/http:basic-authentication/@username,'^\$\{.*\}$')
+			or
+			matches(//mule:mule/http:request-config/http:request-connection/http:authentication/http:basic-authentication/@password,'^\$\{.*\}$')
+			)
+		</rule>
+		<rule id="18" ruleKey="http-requester-tls-context"
+		  name="HTTP Request must configure TLS context for secure connections"
+		  description="HTTP Request configuration must include a 'tlsContext' attribute in &lt;request-connection&gt; to specify SSL/TLS settings. TLS context configuration controls certificate validation, supported protocols, and cipher suites for secure HTTPS communication."
+			  severity="MAJOR" type="vulnerability"
+			  locationHint="//*//global.xml//*[local-name()='request-config']">
+			count(//mule:mule/http:request-config)=0
+			or
+			count(//mule:mule/http:request-config/http:request-connection/@tlsContext)>0
+		</rule>
+		<rule id="19" ruleKey="http-listener-tls-context"
+		  name="HTTP Listener must configure TLS context for secure connections"
+		  description="HTTP Listener configuration must include a 'tlsContext' attribute in &lt;listener-connection&gt; to specify SSL/TLS settings. TLS context defines the keystore, truststore, supported protocols, and cipher suites required for HTTPS endpoints. Missing TLS context prevents secure HTTPS communication."
+			  severity="CRITICAL" type="vulnerability"
+			  locationHint="//*//global.xml//*[local-name()='listener-config']">
+			count(//mule:mule/http:listener-config)=0
+			or
+			count(//mule:mule/http:listener-config/http:listener-connection/@tlsContext)>0
+		</rule>
+		<rule id="20" ruleKey="munit-test-required"
+		  name="Application must include MUnit test configuration"
+		  description="Application must contain at least one &lt;munit:config&gt; element indicating the presence of MUnit tests. Unit tests are essential for code quality, regression prevention, and continuous integration. Every Mule application should have corresponding test coverage."
+			  severity="MAJOR" type="vulnerability"
+			  locationHint="//*//munit//*[local-name()='config']">
+			count(//mule:mule/munit:config)>0
+		</rule>
+	</ruleset>
+</rulestore>
