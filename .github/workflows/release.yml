@@ -38,6 +38,8 @@ jobs:
           RELEASE_VERSION="${VERSION%-SNAPSHOT}"
           echo "version=${RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=v${RELEASE_VERSION}" >> "$GITHUB_OUTPUT"
+          # Keep the full pom version (incl. -SNAPSHOT) for locating the built jar
+          echo "full_version=${VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Check if tag already exists
         id: tag_check
@@ -68,8 +70,9 @@ jobs:
         id: find_jar
         run: |
           # Target the deterministic finalName built by sonar-packaging-maven-plugin,
-          # avoiding original-*.jar / *-tests.jar sidecars.
-          JAR_PATH="target/sonar-mulesoft-plugin-${{ steps.get_version.outputs.version }}.jar"
+          # avoiding original-*.jar / *-tests.jar sidecars. The jar carries the full
+          # pom version (incl. -SNAPSHOT), not the stripped release version.
+          JAR_PATH="target/sonar-mulesoft-plugin-${{ steps.get_version.outputs.full_version }}.jar"
           if [ ! -f "$JAR_PATH" ]; then
             echo "::error::Expected plugin jar not found at ${JAR_PATH}"
             ls -l target/*.jar || true
