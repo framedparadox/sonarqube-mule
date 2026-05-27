@@ -1,0 +1,16 @@
+<h2>SMTP configuration must use property placeholders</h2>
+<p>The 'host', 'port', 'user', and 'password' attributes in <email:smtp-connection> must reference property placeholders (e.g., ${smtp.host}) instead of hardcoded values. This ensures email configuration can be changed per environment and credentials remain secure.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:email="http://www.mulesoft.org/schema/mule/email"&gt;
+  &lt;email:smtp-config name="SMTP_Config"&gt;
+    &lt;email:smtp-connection host="smtp.gmail.com" port="587" user="user@gmail.com" password="pwd123"/&gt;
+  &lt;/email:smtp-config&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:email="http://www.mulesoft.org/schema/mule/email"&gt;
+  &lt;email:smtp-config name="SMTP_Config"&gt;
+    &lt;email:smtp-connection host="${smtp.host}" port="${smtp.port}" user="${smtp.user}" password="${smtp.password}"/&gt;
+  &lt;/email:smtp-config&gt;
+&lt;/mule&gt;</pre>

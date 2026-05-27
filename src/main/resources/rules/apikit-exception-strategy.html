@@ -1,0 +1,18 @@
+<h2>APIKit global exception handling strategy must be configured</h2>
+<p>Application must define a global error handler with APIKit exception types (<mule:on-error-propagate type='APIKIT:*'>). This ensures standardized error responses and proper HTTP status code mapping for API errors.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;error-handler&gt;
+    &lt;on-error-propagate type="ANY"&gt;
+      &lt;set-payload value="#{'error': 'Unknown error'}"/&gt;
+    &lt;/on-error-propagate&gt;
+  &lt;/error-handler&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;error-handler&gt;
+    &lt;on-error-propagate type="APIKIT:BAD_REQUEST"&gt;
+      &lt;set-payload value="#{'error': 'Bad request'}"/&gt;
+    &lt;/on-error-propagate&gt;
+  &lt;/error-handler&gt;
+&lt;/mule&gt;</pre>

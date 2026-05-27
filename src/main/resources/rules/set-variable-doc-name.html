@@ -1,0 +1,14 @@
+<h2>Set Variable doc:name must match the variable name</h2>
+<p>The doc:name attribute of <set-variable> components should match the variableName attribute for consistency and clarity. This makes flow diagrams and debugging more intuitive by showing the actual variable name being set.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;flow name="data-flow"&gt;
+    &lt;set-variable variableName="myVar" value="#['data']" doc:name="Other Name"/&gt;
+  &lt;/flow&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;flow name="data-flow"&gt;
+    &lt;set-variable variableName="myVar" value="#['data']" doc:name="myVar"/&gt;
+  &lt;/flow&gt;
+&lt;/mule&gt;</pre>

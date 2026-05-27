@@ -1,0 +1,6 @@
+<h2>INFO logger must not log full payload</h2>
+<p>Logger components at INFO level must not reference <code>#[payload]</code>. Logging full payloads exposes sensitive data and generates excessive log volume.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;logger level="INFO" message="Body: #[payload]"/&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;logger level="DEBUG" message="Body: #[payload]"/&gt;</pre>

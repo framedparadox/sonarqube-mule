@@ -1,0 +1,12 @@
+<h2>Application must use configuration properties for external resources</h2>
+<p>Application must include either <secure-properties:config> or <configuration-properties> to externalize configuration. This ensures credentials, URLs, and environment-specific settings are managed outside the code and can be changed without redeployment.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;http:listener-config name="HTTP_config" host="0.0.0.0" port="8081"/&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"&gt;
+  &lt;secure-properties:config file="app.properties" key="${encryption.key}"/&gt;
+  &lt;http:listener-config name="HTTP_config" host="0.0.0.0" port="${http.port}"/&gt;
+&lt;/mule&gt;</pre>

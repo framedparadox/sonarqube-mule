@@ -1,0 +1,16 @@
+<h2>HTTP Listener port must use property placeholder</h2>
+<p>HTTP Listener configuration must use ${https.port} or ${https.private.port} for the port attribute instead of hardcoded values. This allows port configuration to vary across environments (dev, test, prod) without code changes.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:listener-config name="HTTP_config"&gt;
+    &lt;http:listener-connection host="0.0.0.0" port="8443"/&gt;
+  &lt;/http:listener-config&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:listener-config name="HTTP_config"&gt;
+    &lt;http:listener-connection host="0.0.0.0" port="${https.port}"/&gt;
+  &lt;/http:listener-config&gt;
+&lt;/mule&gt;</pre>

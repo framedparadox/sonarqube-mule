@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration status="WARN">
+	<Properties>
+		<Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Property>
+		<Property name="LOG_PATTERN_DETAILED">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} [%X{correlationId}] - %msg%n</Property>
+	</Properties>
+
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="${LOG_PATTERN}" />
+		</Console>
+
+		<RollingFile name="RollingFile" fileName="logs/sonarqube-mule.log"
+					 filePattern="logs/sonarqube-mule-%d{yyyy-MM-dd}-%i.log.gz">
+			<PatternLayout pattern="${LOG_PATTERN_DETAILED}" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+			<DefaultRolloverStrategy max="30"/>
+		</RollingFile>
+
+		<RollingFile name="ErrorFile" fileName="logs/sonarqube-mule-error.log"
+					 filePattern="logs/sonarqube-mule-error-%d{yyyy-MM-dd}-%i.log.gz">
+			<PatternLayout pattern="${LOG_PATTERN_DETAILED}" />
+			<Filters>
+				<ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+			</Filters>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+			<DefaultRolloverStrategy max="30"/>
+		</RollingFile>
+
+		<Async name="AsyncConsole">
+			<AppenderRef ref="Console"/>
+		</Async>
+
+		<Async name="AsyncFile">
+			<AppenderRef ref="RollingFile"/>
+		</Async>
+
+		<Async name="AsyncError">
+			<AppenderRef ref="ErrorFile"/>
+		</Async>
+	</Appenders>
+
+	<Loggers>
+		<!-- SonarQube Plugin Loggers -->
+		<Logger name="com.mulesoft.services.tools.sonarqube" level="DEBUG" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+			<AppenderRef ref="AsyncFile"/>
+		</Logger>
+
+		<Logger name="com.mulesoft.services.tools.sonarqube.metrics" level="DEBUG" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+			<AppenderRef ref="AsyncFile"/>
+		</Logger>
+
+		<Logger name="com.mulesoft.services.tools.sonarqube.sensor" level="DEBUG" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+			<AppenderRef ref="AsyncFile"/>
+		</Logger>
+
+		<Logger name="com.mulesoft.services.tools.validation" level="DEBUG" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+			<AppenderRef ref="AsyncFile"/>
+		</Logger>
+
+		<Logger name="com.mulesoft.services.xpath" level="INFO" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+			<AppenderRef ref="AsyncFile"/>
+		</Logger>
+
+		<!-- General MuleSoft Logger -->
+		<Logger name="com.mulesoft" level="INFO" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+			<AppenderRef ref="AsyncFile"/>
+		</Logger>
+
+		<!-- SonarQube API Loggers -->
+		<Logger name="org.sonar" level="WARN" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+			<AppenderRef ref="AsyncFile"/>
+		</Logger>
+
+		<Logger name="org.sonar.api" level="INFO" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+			<AppenderRef ref="AsyncFile"/>
+		</Logger>
+
+		<!-- XML Processing -->
+		<Logger name="org.jaxen" level="WARN" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+		</Logger>
+
+		<Logger name="org.dom4j" level="WARN" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+		</Logger>
+
+		<!-- Third Party Libraries -->
+		<Logger name="org.apache" level="WARN" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+		</Logger>
+
+		<Logger name="org.springframework" level="WARN" additivity="false">
+			<AppenderRef ref="AsyncConsole"/>
+		</Logger>
+
+		<!-- Root Logger -->
+		<Root level="INFO">
+			<AppenderRef ref="AsyncConsole" />
+			<AppenderRef ref="AsyncFile" />
+			<AppenderRef ref="AsyncError" />
+		</Root>
+	</Loggers>
+</Configuration>

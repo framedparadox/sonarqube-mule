@@ -1,0 +1,16 @@
+<h2>Database connection URL must use property placeholder</h2>
+<p>The 'url' attribute in <db:generic-connection> must reference a property placeholder (e.g., ${db.url}) instead of a hardcoded connection string. Hardcoded URLs prevent environment portability and may expose database credentials in code.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:db="http://www.mulesoft.org/schema/mule/db"&gt;
+  &lt;db:config name="DB_Config"&gt;
+    &lt;db:generic-connection url="jdbc:mysql://localhost:3306/mydb"/&gt;
+  &lt;/db:config&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:db="http://www.mulesoft.org/schema/mule/db"&gt;
+  &lt;db:config name="DB_Config"&gt;
+    &lt;db:generic-connection url="${db.url}"/&gt;
+  &lt;/db:config&gt;
+&lt;/mule&gt;</pre>

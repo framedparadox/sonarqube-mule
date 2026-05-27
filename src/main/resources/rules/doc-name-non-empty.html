@@ -1,0 +1,6 @@
+<h2>Component doc:name must not be empty</h2>
+<p>All components with a <code>doc:name</code> attribute must provide a meaningful non-empty value. Empty names make flow diagrams unreadable.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;set-variable variableName="customerId" value="#[payload.id]" doc:name=""/&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;set-variable variableName="customerId" value="#[payload.id]" doc:name="Extract Customer ID"/&gt;</pre>

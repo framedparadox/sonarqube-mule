@@ -1,0 +1,24 @@
+<h2>APIKit error handlers must define standard HTTP error responses</h2>
+<p>Global error handler must include on-error-propagate elements for APIKIT:BAD_REQUEST (400), APIKIT:METHOD_NOT_ALLOWED (405), and APIKIT:NOT_FOUND (404). These error handlers ensure proper HTTP status codes are returned for common API validation errors.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;error-handler&gt;
+    &lt;on-error-propagate type="ANY"&gt;
+      &lt;set-payload value="#{'error': 'Error'}"/&gt;
+    &lt;/on-error-propagate&gt;
+  &lt;/error-handler&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"&gt;
+  &lt;error-handler&gt;
+    &lt;on-error-propagate type="APIKIT:BAD_REQUEST"&gt;
+      &lt;set-payload value="#{'error': 'Bad request'}"/&gt;
+    &lt;/on-error-propagate&gt;
+    &lt;on-error-propagate type="APIKIT:NOT_FOUND"&gt;
+      &lt;set-payload value="#{'error': 'Not found'}"/&gt;
+    &lt;/on-error-propagate&gt;
+    &lt;on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED"&gt;
+      &lt;set-payload value="#{'error': 'Method not allowed'}"/&gt;
+    &lt;/on-error-propagate&gt;
+  &lt;/error-handler&gt;
+&lt;/mule&gt;</pre>

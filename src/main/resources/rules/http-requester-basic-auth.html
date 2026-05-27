@@ -1,0 +1,24 @@
+<h2>HTTP Request must not configure Basic Authentication</h2>
+<p>HTTP Request configuration should not include <http:basic-authentication> elements. This rule flags the presence of basic authentication configuration, which may indicate credentials are being managed in the configuration. Use more secure authentication methods or ensure credentials are properly externalized.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:request-config name="HTTP_Request_config"&gt;
+    &lt;http:request-connection host="api.example.com"&gt;
+      &lt;http:authentication&gt;
+        &lt;http:basic-authentication username="user" password="pass"/&gt;
+      &lt;/http:authentication&gt;
+    &lt;/http:request-connection&gt;
+  &lt;/http:request-config&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:request-config name="HTTP_Request_config"&gt;
+    &lt;http:request-connection host="api.example.com"&gt;
+      &lt;http:authentication&gt;
+        &lt;http:oauth2-client-credentials clientId="${oauth.client.id}" clientSecret="${oauth.client.secret}"/&gt;
+      &lt;/http:authentication&gt;
+    &lt;/http:request-connection&gt;
+  &lt;/http:request-config&gt;
+&lt;/mule&gt;</pre>

@@ -1,0 +1,16 @@
+<h2>HTTP Request port must use property placeholder</h2>
+<p>HTTP Request configuration must use ${https.port} or ${https.private.port} for the port attribute instead of hardcoded values. This allows external service port configuration to vary across environments without code changes.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:request-config name="HTTP_Request_config"&gt;
+    &lt;http:request-connection host="api.example.com" port="443"/&gt;
+  &lt;/http:request-config&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:request-config name="HTTP_Request_config"&gt;
+    &lt;http:request-connection host="api.example.com" port="${https.port}"/&gt;
+  &lt;/http:request-config&gt;
+&lt;/mule&gt;</pre>

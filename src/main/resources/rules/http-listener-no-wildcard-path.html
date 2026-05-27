@@ -1,0 +1,6 @@
+<h2>HTTP Listener path must not be a wildcard</h2>
+<p>The <code>path</code> attribute on <code>&lt;http:listener&gt;</code> must not be <code>/*</code> or <code>*</code>. Wildcard paths can expose unintended endpoints.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;http:listener path="/*" config-ref="listenerConfig"/&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;http:listener path="/api/v1/*" config-ref="listenerConfig"/&gt;</pre>

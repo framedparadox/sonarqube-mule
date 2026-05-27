@@ -1,0 +1,20 @@
+<h2>HTTP Request must configure TLS context for secure connections</h2>
+<p>HTTP Request configuration must include a 'tlsContext' attribute in <request-connection> to specify SSL/TLS settings. TLS context configuration controls certificate validation, supported protocols, and cipher suites for secure HTTPS communication.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:request-config name="HTTP_Request_config"&gt;
+    &lt;http:request-connection host="api.example.com" port="443" protocol="HTTPS"/&gt;
+  &lt;/http:request-config&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:tls="http://www.mulesoft.org/schema/mule/tls"&gt;
+  &lt;tls:context name="TLS_Context"&gt;
+    &lt;tls:trust-store path="truststore.jks" password="${tls.password}"/&gt;
+  &lt;/tls:context&gt;
+  &lt;http:request-config name="HTTP_Request_config"&gt;
+    &lt;http:request-connection host="api.example.com" port="443" protocol="HTTPS" tlsContext="TLS_Context"/&gt;
+  &lt;/http:request-config&gt;
+&lt;/mule&gt;</pre>

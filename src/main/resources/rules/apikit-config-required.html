@@ -1,0 +1,14 @@
+<h2>APIKit configuration is required for API implementation</h2>
+<p>Application must include an APIKit configuration (<apikit:config>) to auto-generate the REST API implementation interface from the RAML/OAS specification. This ensures consistent API contract implementation and reduces manual coding errors.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"&gt;
+  &lt;http:listener-config name="HTTP_config" host="0.0.0.0" port="8081"/&gt;
+&lt;/mule&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit"&gt;
+  &lt;apikit:config name="API_config" raml="api.raml"/&gt;
+  &lt;http:listener-config name="HTTP_config" host="0.0.0.0" port="8081"/&gt;
+&lt;/mule&gt;</pre>

@@ -1,0 +1,13 @@
+<h2>TLS context should configure certificate revocation check</h2>
+<p>TLS context elements should include <code>&lt;tls:revocation-check&gt;</code> to validate certificate revocation status via CRL or OCSP.</p>
+<h3>Noncompliant Code</h3>
+<pre>&lt;tls:context name="listenerTlsContext"&gt;
+  &lt;tls:key-store path="${keystore.path}"/&gt;
+&lt;/tls:context&gt;</pre>
+<h3>Compliant Code</h3>
+<pre>&lt;tls:context name="listenerTlsContext"&gt;
+  &lt;tls:key-store path="${keystore.path}"/&gt;
+  &lt;tls:revocation-check&gt;
+    &lt;tls:crl-file path="${crl.path}"/&gt;
+  &lt;/tls:revocation-check&gt;
+&lt;/tls:context&gt;</pre>
