@@ -3,7 +3,12 @@ name: Build and Release
 on:
   push:
     branches:
-      - build
+      - main
+
+# Avoid two pushes racing to create the same tag / release.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -40,6 +45,7 @@ jobs:
           TAG="v${{ steps.get_version.outputs.version }}"
           if git ls-remote --tags origin | grep -q "refs/tags/${TAG}$"; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Tag ${TAG} already exists - skipping release."
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
@@ -61,9 +67,22 @@ jobs:
         if: steps.tag_check.outputs.exists == 'false'
         id: find_jar
         run: |
-          JAR_PATH=$(find target -maxdepth 1 -name "*.jar" ! -name "*-tests.jar" | head -1)
+          # Target the deterministic finalName built by sonar-packaging-maven-plugin,
+          # avoiding original-*.jar / *-tests.jar sidecars.
+          JAR_PATH="target/sonar-mulesoft-plugin-${{ steps.get_version.outputs.version }}.jar"
+          if [ ! -f "$JAR_PATH" ]; then
+            echo "::error::Expected plugin jar not found at ${JAR_PATH}"
+            ls -l target/*.jar || true
+            exit 1
+          fi
           echo "jar_path=${JAR_PATH}" >> "$GITHUB_OUTPUT"
-          echo "jar_name=$(basename ${JAR_PATH})" >> "$GITHUB_OUTPUT"
+          echo "jar_name=$(basename "${JAR_PATH}")" >> "$GITHUB_OUTPUT"
+
+      - name: Generate SHA-256 checksum
+        if: steps.tag_check.outputs.exists == 'false'
+        run: |
+          cd target
+          sha256sum "${{ steps.find_jar.outputs.jar_name }}" > "${{ steps.find_jar.outputs.jar_name }}.sha256"
 
       - name: Create GitHub Release
         if: steps.tag_check.outputs.exists == 'false'
@@ -71,11 +90,37 @@ jobs:
         with:
           tag_name: ${{ steps.get_version.outputs.tag }}
           name: Release ${{ steps.get_version.outputs.tag }}
+          generate_release_notes: true
           body: |
-            ## SonarQube Mulesoft Plugin ${{ steps.get_version.outputs.tag }}
+            ## SonarQube MuleSoft Plugin ${{ steps.get_version.outputs.tag }}
+
+            Static code analysis and quality rules for Mule 4 projects.
+
+            ### Compatibility
+            | Component | Version |
+            | --------- | ------- |
+            | Java runtime | 21+ |
+            | SonarQube Plugin API | 13.4.3 (SonarQube 2025.x / 10.7+) |
 
             ### Installation
-            Copy `${{ steps.find_jar.outputs.jar_name }}` into your SonarQube `extensions/plugins/` directory and restart SonarQube.
-          files: ${{ steps.find_jar.outputs.jar_path }}
+            1. Download `${{ steps.find_jar.outputs.jar_name }}` from the assets below.
+            2. (Optional) Verify the download:
+               ```bash
+               sha256sum -c ${{ steps.find_jar.outputs.jar_name }}.sha256
+               ```
+            3. Copy the jar into your SonarQube `extensions/plugins/` directory.
+            4. Restart SonarQube.
+
+            ### Included rules
+            - Flow Cognitive Complexity
+            - Flow Cyclomatic Complexity
+            - Flow Nesting Depth
+            - DataWeave commented-out code detection
+
+            ---
+            See the auto-generated notes below for the full list of changes in this release.
+          files: |
+            ${{ steps.find_jar.outputs.jar_path }}
+            ${{ steps.find_jar.outputs.jar_path }}.sha256
           draft: false
           prerelease: false
